@@ -3,6 +3,14 @@ from typing import Optional
 from app.models import Product
 
 
+class ProductNotFound(Exception):
+    pass
+
+
+class InsufficientStock(Exception):
+    pass
+
+
 class InventoryStore:
     def __init__(self) -> None:
         self._products: dict[int, Product] = {}
@@ -16,3 +24,12 @@ class InventoryStore:
 
     def get_product(self, product_id: int) -> Optional[Product]:
         return self._products.get(product_id)
+
+    def reserve(self, product_id: int, quantity: int) -> Product:
+        product = self._products.get(product_id)
+        if product is None:
+            raise ProductNotFound(product_id)
+        if quantity > product.stock:
+            raise InsufficientStock(product_id)
+        product.stock -= quantity
+        return product
