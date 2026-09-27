@@ -83,3 +83,22 @@ def test_reserve_quantity_zero_rejected():
     ).json()
     response = client.post(f"/products/{created['id']}/reserve", json={"quantity": 0})
     assert response.status_code == 422
+
+
+def test_reserve_full_stock_is_allowed():
+    created = client.post(
+        "/products", json={"name": "Last One", "price": 1.0, "stock": 5}
+    ).json()
+    response = client.post(f"/products/{created['id']}/reserve", json={"quantity": 5})
+    assert response.status_code == 200
+    assert response.json()["remaining"] == 0
+
+
+def test_reserve_all_then_more_fails():
+    created = client.post(
+        "/products", json={"name": "Bolt", "price": 2.0, "stock": 2}
+    ).json()
+    first = client.post(f"/products/{created['id']}/reserve", json={"quantity": 2})
+    assert first.status_code == 200
+    second = client.post(f"/products/{created['id']}/reserve", json={"quantity": 1})
+    assert second.status_code == 409
