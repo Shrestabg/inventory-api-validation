@@ -29,7 +29,7 @@ class InventoryStore:
         product = self._products.get(product_id)
         if product is None:
             raise ProductNotFound(product_id)
-        if quantity > product.stock:
+        if quantity >= product.stock:
             raise InsufficientStock(product_id)
         product.stock -= quantity
         return product
