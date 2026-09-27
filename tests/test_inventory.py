@@ -60,3 +60,26 @@ def test_reserve_more_than_stock_rejected():
 def test_reserve_missing_product_returns_404():
     response = client.post("/products/9999/reserve", json={"quantity": 1})
     assert response.status_code == 404
+
+
+def test_create_product_rejects_negative_price():
+    response = client.post("/products", json={"name": "Bad", "price": -1, "stock": 5})
+    assert response.status_code == 422
+
+
+def test_create_product_rejects_negative_stock():
+    response = client.post("/products", json={"name": "Bad", "price": 1, "stock": -5})
+    assert response.status_code == 422
+
+
+def test_create_product_rejects_empty_name():
+    response = client.post("/products", json={"name": "", "price": 1, "stock": 5})
+    assert response.status_code == 422
+
+
+def test_reserve_quantity_zero_rejected():
+    created = client.post(
+        "/products", json={"name": "Screw", "price": 0.3, "stock": 4}
+    ).json()
+    response = client.post(f"/products/{created['id']}/reserve", json={"quantity": 0})
+    assert response.status_code == 422
